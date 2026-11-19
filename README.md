@@ -33,5 +33,9 @@ python3 gradebook.py
 ## Sample data
 
 The `data/students.csv` file already contains 10 sample student records so you can test the program immediately.
+##npotes
+- Grades follow standard boundaries:  
+  HD 85+, DN 75-84, CR 65-74, PS 50-64, FL below 50
+- Final mark is calculated as simple average of the three assessment marks.
 
 
