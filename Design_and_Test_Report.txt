@@ -1,0 +1,41 @@
+Design Choices & Testing Report
+Student: Noman Khan | ID: SM20254113 | Project B
+
+1. Design overview
+The program is a single-file modular console application. Each menu option is handled by its own function. Student records are stored as dictionaries inside a global list. This structure is simple and matches the level of the unit while still showing clear separation of responsibilities (add, view, search, update, delete, rank, report, file load/save).
+
+Final mark is calculated as the average of three assessment marks. Grade is assigned using the same boundaries shown in the unit grading table (HD 85+, DN 75-84, etc.).
+
+A recursive function (recursive_sum) is used only for calculating the total of all final marks. Highest, lowest and grade counts are done with ordinary for-loops so the requirement of “own loops” is satisfied.
+
+2. File handling
+Data is stored in data/students.csv. The program loads the file at start-up. If the file does not exist it creates a new one with the correct header and continues without crashing. On exit the current list is written back to the same file.
+
+3. Input validation
+Every input that can fail is checked in a loop:
+- empty text is rejected
+- non-numeric marks are rejected
+- marks outside 0-100 are rejected
+- duplicate student IDs are blocked when adding
+- unknown IDs for update/delete show a clear message
+
+4. Testing performed
+
+Test case                  | Expected result                    | Actual result
+---------------------------|------------------------------------|---------------
+Add new student            | Record added, final & grade shown  | Passed
+View with empty list       | “No records found” message         | Passed
+Search by ID (exists)      | Correct record displayed           | Passed
+Search by ID (not exist)   | “No matching records”              | Passed
+Search by partial name     | Matching records shown             | Passed
+Update mark                | Final and grade recalculated       | Passed
+Delete with Y confirmation | Record removed                     | Passed
+Delete with N              | Record kept                        | Passed
+Invalid menu choice        | Error message, menu shown again    | Passed
+Mark = 105                 | Rejected, asked again              | Passed
+Empty name                 | Rejected, asked again              | Passed
+Rank students              | Sorted by final mark descending    | Passed
+Summary report             | Average, high, low, grade counts   | Passed
+Exit                       | Data saved, goodbye message        | Passed
+
+All required functional requirements (FR1–FR12) were tested and work as expected.

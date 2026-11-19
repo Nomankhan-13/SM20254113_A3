@@ -1,0 +1,12 @@
+Reflection – Student Gradebook (Project B)
+Noman Khan – SM20254113
+
+For this assessment I chose Project B, the Student Gradebook, because it felt practical and close to real university work. The main goal was to build a simple menu-driven Python program that can store student marks, calculate final grades and show ranking and summary information.
+
+I decided to keep everything in one main file (gradebook.py) but still organised the code into clear functions for each task. This made it easier to test and fix problems one by one. I used a list of dictionaries to store the records because it is flexible and easy to understand. For file handling I used the csv module so data is saved when the program closes and loaded again when it starts. If the file is missing the first time, the program creates a new one automatically.
+
+One requirement was to use recursion. I made a recursive_sum function that adds all the final marks together. It has a clear base case (when the index reaches the end of the list) and a recursive case. I used this total to calculate the class average in the summary report. I also calculated highest and lowest marks and grade counts with normal loops instead of built-in functions, as the brief asked.
+
+Testing was done by adding, searching, updating and deleting records, and also by entering wrong values on purpose (empty name, letters instead of numbers, marks over 100). The program kept asking until the input was correct and never crashed. I also checked that the ranking and summary numbers matched manual calculations.
+
+If I had more time I would add a simple login system and maybe export the report to a text file. Overall the project helped me understand menus, file handling, validation and recursion better. I used Git regularly so every major change is recorded in the commit history.
