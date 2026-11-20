@@ -1,10 +1,17 @@
 # Student Gradebook Manager - ICT102 Assessment 3
 # Student: Noman Khan | ID: SM20254113 | Project B
 # This program manages student records with marks, grades and ranking
-
+# repo : https://github.com/Nomankhan-13/SM20254113_A3
 import csv
 import os
-from datetime import datetime
+
+# ---------- File paths ----------
+# Paths are built from the location of this .py file, so the program
+# works no matter which folder it is run from.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+FILENAME = os.path.join(DATA_DIR, "students.csv")
+FIELDNAMES = ["student_id", "name", "mark1", "mark2", "mark3", "final_mark", "grade"]
 
 # ---------- Global data list ----------
 students = []   # list of dictionaries
@@ -35,38 +42,56 @@ def recursive_sum(marks_list, index=0):
 # ---------- File handling (FR9) ----------
 def load_data():
     global students
-    filename = "data/students.csv"
-    if not os.path.exists(filename):
+    students = []
+
+    # make sure the data folder exists (fixes crash when folder is missing)
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+    if not os.path.exists(FILENAME):
         # create empty file with header if not exist
-        with open(filename, "w", newline="") as f:
+        with open(FILENAME, "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["student_id", "name", "mark1", "mark2", "mark3", "final_mark", "grade"])
-        students = []
+            writer.writerow(FIELDNAMES)
         print("No existing data file found. New file created.")
         return
 
-    try:
-        with open(filename, "r", newline="") as f:
-            reader = csv.DictReader(f)
-            students = []
-            for row in reader:
-                # convert numeric fields
-                row["mark1"] = float(row["mark1"])
-                row["mark2"] = float(row["mark2"])
-                row["mark3"] = float(row["mark3"])
-                row["final_mark"] = float(row["final_mark"])
-                students.append(row)
-        print(f"Loaded {len(students)} student records successfully.")
-    except Exception as e:
-        print("Error while loading the data:", e)
-        students = []
+    skipped = 0
+    with open(FILENAME, "r", newline="") as f:
+        reader = csv.DictReader(f)
+        for line_no, row in enumerate(reader, start=2):
+            # check each row on its own, so one bad row does not
+            # wipe out all the other records
+            try:
+                m1 = float(row["mark1"])
+                m2 = float(row["mark2"])
+                m3 = float(row["mark3"])
+                if not (is_valid_mark(m1) and is_valid_mark(m2) and is_valid_mark(m3)):
+                    raise ValueError("mark out of range")
+                if row["student_id"].strip() == "" or row["name"].strip() == "":
+                    raise ValueError("empty ID or name")
+            except (ValueError, TypeError, KeyError, AttributeError):
+                print(f"Warning: skipped invalid row on line {line_no}.")
+                skipped += 1
+                continue
+            final = round((m1 + m2 + m3) / 3, 2)
+            students.append({
+                "student_id": row["student_id"].strip().upper(),
+                "name": row["name"].strip(),
+                "mark1": m1,
+                "mark2": m2,
+                "mark3": m3,
+                "final_mark": final,
+                "grade": get_grade(final)
+            })
+    print(f"Loaded {len(students)} student records successfully.")
+    if skipped > 0:
+        print(f"{skipped} invalid row(s) were skipped.")
 
 def save_data():
-    filename = "data/students.csv"
     try:
-        with open(filename, "w", newline="") as f:
-            fieldnames = ["student_id", "name", "mark1", "mark2", "mark3", "final_mark", "grade"]
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+        os.makedirs(DATA_DIR, exist_ok=True)
+        with open(FILENAME, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
             writer.writeheader()
             for s in students:
                 writer.writerow(s)
@@ -82,10 +107,17 @@ def get_non_empty(prompt):
             return value
         print("Input cannot be empty. Please try again.")
 
+def is_valid_mark(value):
+    # value != value is only True for NaN ("not a number")
+    return value == value and 0 <= value <= 100
+
 def get_float(prompt, min_val=0, max_val=100):
     while True:
         try:
             value = float(input(prompt))
+            if value != value:   # rejects "nan"
+                print("Please enter a valid number.")
+                continue
             if value < min_val or value > max_val:
                 print(f"Value must be between {min_val} and {max_val}.")
                 continue
@@ -94,10 +126,15 @@ def get_float(prompt, min_val=0, max_val=100):
             print("Please enter a valid number.")
 
 def get_student_id():
-    while True:
-        sid = get_non_empty("Enter Student ID: ").upper()
-        # simple check - should not be empty already handled
-        return sid
+    # IDs are stored in upper case so "s001" and "S001" match
+    return get_non_empty("Enter Student ID: ").upper()
+
+# ---------- Display helper (used by view and search) ----------
+def print_table(records):
+    print(f"{'ID':<12} {'Name':<20} {'M1':>6} {'M2':>6} {'M3':>6} {'Final':>7} {'Grade':>6}")
+    print("-" * 70)
+    for s in records:
+        print(f"{s['student_id']:<12} {s['name']:<20} {s['mark1']:>6.1f} {s['mark2']:>6.1f} {s['mark3']:>6.1f} {s['final_mark']:>7.2f} {s['grade']:>6}")
 
 # ---------- Core functions ----------
 def add_student():
@@ -137,19 +174,14 @@ def view_all():
     if len(students) == 0:
         print("No records found.")
         return
-    
-    # neat aligned header
-    print(f"{'ID':<12} {'Name':<20} {'M1':>6} {'M2':>6} {'M3':>6} {'Final':>7} {'Grade':>6}")
-    print("-" * 70)
-    for s in students:
-        print(f"{s['student_id']:<12} {s['name']:<20} {s['mark1']:>6.1f} {s['mark2']:>6.1f} {s['mark3']:>6.1f} {s['final_mark']:>7.2f} {s['grade']:>6}")
+
+    print_table(students)
 
 def search_student():
     print("\n--- Search Student ---")
     print("1. Search by Student ID")
     print("2. Search by Name")
-    choice = input("Choose search type (1 or 2): ").strip()
-    
+    choice = input("Choose search type (1 or 2): ").strip()    
     results = []
     if choice == "1":
         sid = get_non_empty("Enter Student ID to search: ").upper()
@@ -169,11 +201,8 @@ def search_student():
         print("No matching records found.")
     else:
         print(f"\nFound {len(results)} record(s):")
-        print(f"{'ID':<12} {'Name':<20} {'M1':>6} {'M2':>6} {'M3':>6} {'Final':>7} {'Grade':>6}")
-        print("-" * 70)
-        for s in results:
-            print(f"{s['student_id']:<12} {s['name']:<20} {s['mark1']:>6.1f} {s['mark2']:>6.1f} {s['mark3']:>6.1f} {s['final_mark']:>7.2f} {s['grade']:>6}")
-
+        print_table(results)
+        
 def update_student():
     print("\n--- Update Student Record ---")
     sid = get_non_empty("Enter Student ID to update: ").upper()
