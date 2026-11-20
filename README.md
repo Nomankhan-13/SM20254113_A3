@@ -29,13 +29,17 @@ python3 gradebook.py
 - Data is saved automatically to `data/students.csv` when you exit
 - Input validation so program does not crash on bad input
 - One recursive function used for calculating total marks
+- Works from any folder; creates the data folder and file automatically if missing
+- Skips invalid rows in the CSV file instead of crashing
 
 ## Sample data
 
 The `data/students.csv` file already contains 10 sample student records so you can test the program immediately.
-##npotes
-- Grades follow standard boundaries:  
+
+## Notes
+
+- Grades follow standard boundaries:
   HD 85+, DN 75-84, CR 65-74, PS 50-64, FL below 50
-- Final mark is calculated as simple average of the three assessment marks.
+- Final mark is calculated as the simple average of the three assessment marks.
 
 
