@@ -261,7 +261,12 @@ def delete_student():
         return
     
     print(f"Found: {target['name']} (Final: {target['final_mark']}, Grade: {target['grade']})")
-    confirm = input("Are you sure you want to delete? (Y/N): ").strip().upper()
+       # keep asking until the user types Y or N
+    while True:
+        confirm = input("Are you sure you want to delete? (Y/N): ").strip().upper()
+        if confirm in ("Y", "N"):
+            break
+        print("Please type Y or N.")
     if confirm == "Y":
         students.pop(index)
         print("Record deleted successfully.")
