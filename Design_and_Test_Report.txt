@@ -1,6 +1,8 @@
 Design Choices & Testing Report
 Student: Noman Khan | ID: SM20254113 | Project B
 
+
+repo L: https://github.com/Nomankhan-13/SM20254113_A3
 1. Design overview
 The program is a single-file modular console application. Each menu option is handled by its own function. Student records are stored as dictionaries inside a global list. This structure is simple and matches the level of the unit while still showing clear separation of responsibilities (add, view, search, update, delete, rank, report, file load/save).
 
