@@ -63,7 +63,7 @@ Delete, type "maybe"         | E    | "Please type Y or N.", asked again    | Pa
 data folder missing          | E    | Folder and file created, no crash     | Passed (defect 1 fixed)
 Run from a different folder  | N    | Data still loads                      | Passed (defect 1 fixed)
 Bad row in CSV file          | E    | Row skipped, other records loaded     | Passed (defect 2 fixed)
-
+CSV open in Excel on exit    | E    | Error message shown, no crash         | Passed
 All functional requirements (FR1-FR12) were tested. Testing found the defects listed in section 5, which were fixed and re-tested.
 
 5. Defects found and fixed
@@ -72,6 +72,8 @@ All functional requirements (FR1-FR12) were tested. Testing found the defects li
 3. "nan" accepted as a mark. Python's float("nan") passed the 0-100 check. Fix: a check was added that rejects NaN.
 4. Delete accepted any answer as "No". Fix: it now asks again until the user types Y or N.
 5. Duplicate table-printing code in View All and Search. Fix: moved into one print_table() function.
+
+Known limitation: if the CSV file is open in another program (e.g. Excel) when exiting, the save fails. The program shows an error and does not crash, but changes from that session are not saved.
 
 6. Screenshots
 Screenshots of the program output and Git history are in the screenshots folder:
@@ -82,3 +84,5 @@ Screenshots of the program output and Git history are in the screenshots folder:
 - Summary Report.png
 - github repo.png
 - all commits.png
+- nan rejected.png
+- delete_reprompt.png
