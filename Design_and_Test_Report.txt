@@ -2,42 +2,83 @@ Design Choices & Testing Report
 Student: Noman Khan | ID: SM20254113 | Project B
 
 
-repo L: https://github.com/Nomankhan-13/SM20254113_A3
+GitHub repository: https://github.com/Nomankhan-13/SM20254113_A3
+
 1. Design overview
-The program is a single-file modular console application. Each menu option is handled by its own function. Student records are stored as dictionaries inside a global list. This structure is simple and matches the level of the unit while still showing clear separation of responsibilities (add, view, search, update, delete, rank, report, file load/save).
+The program is a single-file console application where each menu option has its own function. Records are stored as dictionaries in a global list. A shared print_table() helper prints the aligned table for View All and Search.
 
-Final mark is calculated as the average of three assessment marks. Grade is assigned using the same boundaries shown in the unit grading table (HD 85+, DN 75-84, etc.).
+Final mark is the average of the three assessment marks, and the grade uses the unit boundaries (HD 85+, DN 75-84, CR 65-74, PS 50-64, FL below 50). Highest, lowest and grade counts use ordinary for-loops, as the brief requires.
 
-A recursive function (recursive_sum) is used only for calculating the total of all final marks. Highest, lowest and grade counts are done with ordinary for-loops so the requirement of “own loops” is satisfied.
+Recursion: recursive_sum totals the final marks for the class average. Recursion suits this small list. For very large lists (over about 1,000 students), Python's recursion limit would make a loop the better choice.
+
+    FUNCTION recursive_sum(marks_list, index = 0)
+        IF index >= length of marks_list THEN RETURN 0           // base case
+        RETURN marks_list[index] + recursive_sum(marks_list, index + 1)   // recursive case
+    END FUNCTION
 
 2. File handling
 Data is stored in data/students.csv. The program loads the file at start-up. If the file does not exist it creates a new one with the correct header and continues without crashing. On exit the current list is written back to the same file.
+
+The file path is built from the location of gradebook.py, so the program works from any folder. If the data folder is missing, it is created automatically. Each CSV row is checked on its own, so an invalid row is skipped with a warning instead of stopping the whole load.
 
 3. Input validation
 Every input that can fail is checked in a loop:
 - empty text is rejected
 - non-numeric marks are rejected
 - marks outside 0-100 are rejected
+- "nan" is rejected as a mark
 - duplicate student IDs are blocked when adding
 - unknown IDs for update/delete show a clear message
+- delete confirmation repeats until the user types Y or N
 
 4. Testing performed
+Type: N = normal, B = boundary, E = error
 
-Test case                  | Expected result                    | Actual result
----------------------------|------------------------------------|---------------
-Add new student            | Record added, final & grade shown  | Passed
-View with empty list       | “No records found” message         | Passed
-Search by ID (exists)      | Correct record displayed           | Passed
-Search by ID (not exist)   | “No matching records”              | Passed
-Search by partial name     | Matching records shown             | Passed
-Update mark                | Final and grade recalculated       | Passed
-Delete with Y confirmation | Record removed                     | Passed
-Delete with N              | Record kept                        | Passed
-Invalid menu choice        | Error message, menu shown again    | Passed
-Mark = 105                 | Rejected, asked again              | Passed
-Empty name                 | Rejected, asked again              | Passed
-Rank students              | Sorted by final mark descending    | Passed
-Summary report             | Average, high, low, grade counts   | Passed
-Exit                       | Data saved, goodbye message        | Passed
+Test case                    | Type | Expected result                       | Actual result
+-----------------------------|------|---------------------------------------|---------------
+Add new student              | N    | Record added, final & grade shown     | Passed
+View with empty list         | E    | "No records found." message           | Passed
+Search by ID (exists)        | N    | Correct record displayed              | Passed
+Search by ID (not exist)     | E    | "No matching records found."          | Passed
+Search by partial name       | N    | Matching records shown                | Passed
+Update mark                  | N    | Final and grade recalculated          | Passed
+Delete with Y confirmation   | N    | Record removed                        | Passed
+Delete with N                | N    | Record kept                           | Passed
+Invalid menu choice          | E    | Error message, menu shown again       | Passed
+Mark = 105                   | E    | Rejected, asked again                 | Passed
+Empty name                   | E    | Rejected, asked again                 | Passed
+Rank students                | N    | Sorted by final mark descending       | Passed
+Summary report               | N    | Average, high, low, grade counts      | Passed
+Exit                         | N    | Data saved, goodbye message           | Passed
+Mark = 0                     | B    | Accepted                              | Passed
+Mark = 100                   | B    | Accepted                              | Passed
+Mark = -5                    | E    | Rejected, asked again                 | Passed
+Mark = "abc"                 | E    | Rejected, asked again                 | Passed
+Mark = "nan"                 | E    | Rejected, asked again                 | Passed (defect 3 fixed)
+Final mark exactly 85        | B    | Grade HD                              | Passed
+Final mark 84.67 (85,85,84)  | B    | Grade DN                              | Passed
+Update with unknown ID       | E    | "Student ID not found."               | Passed
+Delete with unknown ID       | E    | "Student ID not found."               | Passed
+Delete, type "maybe"         | E    | "Please type Y or N.", asked again    | Passed (defect 4 fixed)
+data folder missing          | E    | Folder and file created, no crash     | Passed (defect 1 fixed)
+Run from a different folder  | N    | Data still loads                      | Passed (defect 1 fixed)
+Bad row in CSV file          | E    | Row skipped, other records loaded     | Passed (defect 2 fixed)
 
-All required functional requirements (FR1–FR12) were tested and work as expected.
+All functional requirements (FR1-FR12) were tested. Testing found the defects listed in section 5, which were fixed and re-tested.
+
+5. Defects found and fixed
+1. Crash when the data folder was missing. The program used the path "data/students.csv", so it crashed with FileNotFoundError when the folder did not exist or when it was run from another folder. Fix: the path is now built from the script's own location using os.path, and the folder is created with os.makedirs(..., exist_ok=True).
+2. One bad CSV row wiped all records. A single unreadable row made the whole load fail, and the empty list was then saved over the file on exit. Fix: each row is now checked on its own, and bad rows are skipped with a warning.
+3. "nan" accepted as a mark. Python's float("nan") passed the 0-100 check. Fix: a check was added that rejects NaN.
+4. Delete accepted any answer as "No". Fix: it now asks again until the user types Y or N.
+5. Duplicate table-printing code in View All and Search. Fix: moved into one print_table() function.
+
+6. Screenshots
+Screenshots of the program output and Git history are in the screenshots folder:
+- Add New Student.png
+- View All Student.png
+- Search by Name.png
+- Rank Students.png
+- Summary Report.png
+- github repo.png
+- all commits.png
